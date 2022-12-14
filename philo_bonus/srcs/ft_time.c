@@ -25,7 +25,9 @@ int	ft_time_left(t_table *table)
 	int	time_spent;
 	int	time_left;
 
+	pthread_mutex_lock(&table->philo->m_time_last_meal);
 	time_spent = ft_get_time() - table->philo->time_last_meal;
+	pthread_mutex_unlock(&table->philo->m_time_last_meal);
 	time_left = table->rules->time_die - time_spent;
 	return (time_left);
 }

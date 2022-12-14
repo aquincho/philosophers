@@ -28,3 +28,5 @@ int	main(int argc, char **argv)
 	ft_free_table(table);
 	return (result);
 }
+
+/* TODO protection par mutex dans les threads*/

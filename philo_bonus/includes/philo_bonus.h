@@ -48,29 +48,36 @@ typedef struct s_msg
 {
 	char	*msg;
 	int		type;
-	sem_t	*m_msg;
+	sem_t	*sem_msg;
 }	t_msg;
 
 typedef struct s_global
 {
 	bool				is_death;
+	pthread_mutex_t		m_is_death;
+	pthread_mutex_t		m_repletion;
 	bool				repletion;
 	unsigned long long	start_time;
 	unsigned long long	end_time;
-	sem_t				*m_take_forks;
-	sem_t				*m_repletion;
-	sem_t				*m_is_death;
-	sem_t				*m_is_end;
+	sem_t				*sem_take_forks;
+	sem_t				*sem_repletion;
+	sem_t				*sem_is_death;
+	//sem_t				*sem_is_end;
 }	t_global;
 
 typedef struct s_philo
 {
 	int					id;
 	pthread_t			thr_superv;
-	pthread_t			thr_end_philo;
+	//pthread_t			thr_end_philo;
 	bool				is_dead;
-	bool				is_end;
+	//bool				is_end;
 	bool				ate_enough;
+	pthread_mutex_t		m_is_dead;
+	//pthread_mutex_t		m_is_end;
+	//pthread_mutex_t		m_ate_enough;
+	pthread_mutex_t		m_eat_count;
+	pthread_mutex_t		m_time_last_meal;
 	int					eat_count;
 	unsigned long long	time_last_meal;
 	int					time_left;
@@ -80,12 +87,14 @@ typedef struct s_table
 {
 	t_rules		*rules;
 	t_philo		*philo;
-	sem_t		*m_fork;
+	pid_t		*philo_pid;
+	sem_t		*sem_fork;
 	t_msg		*msg;
 	t_global	*global;
 	pthread_t	thr_repletion;
 	pthread_t	thr_death;
 	int			semaphore_errinit;
+	int			mutex_errinit;
 }	t_table;
 
 /* Rules initialization ft_init.c */

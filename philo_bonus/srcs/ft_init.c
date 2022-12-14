@@ -34,28 +34,40 @@ static void	ft_init_rules(t_table *table, int argc, char **argv)
 		ft_err_free_exit("Time must be over 0 ms.", table);
 }
 
+static void	ft_init_mutex(t_table *table)
+{
+	table->mutex_errinit = 0;
+	table->mutex_errinit
+		+= pthread_mutex_init(&table->global->m_is_death, NULL);
+	table->mutex_errinit
+		+= pthread_mutex_init(&table->philo->m_is_dead, NULL);
+	table->mutex_errinit
+		+= pthread_mutex_init(&table->philo->m_time_last_meal, NULL);
+	table->mutex_errinit
+		+= pthread_mutex_init(&table->philo->m_eat_count, NULL);
+	if (table->mutex_errinit != 0)
+		ft_err_free_exit("Cannot initialize mutexes", table);
+}
+
 static void	ft_init_semaphore(t_table *table)
 {
-	table->semaphore_errinit = 0;
+	
 	sem_unlink("/pmsg");
 	sem_unlink("/ptake");
 	sem_unlink("/pfork");
 	sem_unlink("/prepletion");
 	sem_unlink("/pdeath");
-	sem_unlink("/pend");
-	table->msg->m_msg = sem_open("/pmsg", O_CREAT, 0644, 1);
-	table->global->m_take_forks = sem_open("/ptake", O_CREAT, 0644, 1);
-	table->m_fork = sem_open("/pfork", O_CREAT, 0644,
+	table->msg->sem_msg = sem_open("/pmsg", O_CREAT, 0644, 1);
+	table->global->sem_take_forks = sem_open("/ptake", O_CREAT, 0644, 1);
+	table->sem_fork = sem_open("/pfork", O_CREAT, 0644,
 			table->rules->nbr_philo);
-	table->global->m_repletion = sem_open("/prepletion", O_CREAT, 0644, 1);
-	table->global->m_is_death = sem_open("/pdeath", O_CREAT, 0644, 1);
-	table->global->m_is_end = sem_open("/pend", O_CREAT, 0644, 1);
-	if (table->msg->m_msg == SEM_FAILED
-		|| table->global->m_take_forks == SEM_FAILED
-		|| table->m_fork == SEM_FAILED
-		|| table->global->m_repletion == SEM_FAILED
-		|| table->global->m_is_death == SEM_FAILED
-		|| table->global->m_is_end == SEM_FAILED)
+	table->global->sem_repletion = sem_open("/prepletion", O_CREAT, 0644, 1);
+	table->global->sem_is_death = sem_open("/pdeath", O_CREAT, 0644, 1);
+	if (table->msg->sem_msg == SEM_FAILED
+		|| table->global->sem_take_forks == SEM_FAILED
+		|| table->sem_fork == SEM_FAILED
+		|| table->global->sem_repletion == SEM_FAILED
+		|| table->global->sem_is_death == SEM_FAILED)
 	{
 		table->semaphore_errinit = 1;
 		ft_err_free_exit("Cannot initialize semaphores!", table);
@@ -66,7 +78,6 @@ void	ft_init_data_philo(t_table *table, int i)
 {
 		table->philo->id = i;
 		table->philo->is_dead = false;
-		table->philo->is_end = false;
 		table->philo->ate_enough = false;
 		table->philo->eat_count = 0;
 		table->philo->time_last_meal = 0;
@@ -81,10 +92,12 @@ static void	ft_init_philos(t_table *table)
 		ft_err_free_exit("Cannot initialize data", table);
 	table->global->repletion = false;
 	table->global->is_death = false;
-	table->philo = (t_philo *)malloc
-		(sizeof(*(table->philo)) * (table->rules->nbr_philo));
+	table->philo = (t_philo *)malloc(sizeof(*(table->philo)));
 	if (!table->philo)
 		ft_err_free_exit("Cannot initialize philosopher", table);
+	table->philo_pid = malloc(sizeof(pid_t) * (table->rules->nbr_philo));
+	if (!table->philo_pid)
+		ft_err_free_exit("Cannot initialize philosopher pids", table);
 }
 
 t_table	*ft_init(int argc, char **argv)
@@ -102,6 +115,7 @@ t_table	*ft_init(int argc, char **argv)
 	ft_init_rules(table, argc, argv);
 	ft_init_philos(table);
 	ft_init_semaphore(table);
+	ft_init_mutex(table);
 	ft_init_data_philo(table, 0);
 	return (table);
 }

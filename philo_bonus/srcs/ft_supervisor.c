@@ -12,15 +12,6 @@
 
 #include "philo_bonus.h"
 
-static inline void	ft_dead_philo_action(t_table *table)
-{
-	ft_display_msg(table, ft_get_time(), TYPE_DIE);
-	table->philo->is_end = true;
-	table->philo->is_dead = true;
-	sem_post(table->global->m_is_death);
-	sem_post(table->global->m_is_end);
-}
-
 void	*ft_philo_supervisor(void *data)
 {
 	t_table	*table;
@@ -28,32 +19,41 @@ void	*ft_philo_supervisor(void *data)
 
 	table = (t_table *)data;
 	philo = table->philo;
-	while (!philo->is_dead && !philo->is_end)
+	while (!philo->is_dead)
 	{
+		pthread_mutex_lock(&table->philo->m_is_dead);
 		philo->is_dead = (ft_isdead(table) || philo->is_dead);
-		if (philo->is_dead && !philo->is_end)
-			ft_dead_philo_action(table);
+		pthread_mutex_unlock(&table->philo->m_is_dead);
+		if (philo->is_dead)
+		{
+			ft_display_msg(table, ft_get_time(), TYPE_DIE);
+			sem_post(table->global->sem_is_death);
+			sem_wait(table->msg->sem_msg);
+		}
+		pthread_mutex_lock(&table->philo->m_eat_count);
 		if (table->rules->nbr_eat > 0
 			&& philo->eat_count >= table->rules->nbr_eat && !philo->is_dead
-			&& !philo->ate_enough && !philo->is_end)
+			&& !philo->ate_enough)
 		{
-			sem_post(table->global->m_repletion);
 			philo->ate_enough = true;
+			sem_post(table->global->sem_repletion);
 		}
+		pthread_mutex_unlock(&table->philo->m_eat_count);
 		usleep(10);
 	}
 	return (NULL);
 }
 
-void	*ft_end_philo_supervisor(void *data)
+static inline void	ft_kill_philos(t_table *table)
 {
-	t_table	*table;
+	int	i;
 
-	table = (t_table *)data;
-	sem_wait(table->global->m_is_end);
-	table->philo->is_end = true;
-	sem_post(table->global->m_is_end);
-	return (NULL);
+	i = 0;
+	while (i < table->rules->nbr_philo)
+	{
+		kill(table->philo_pid[i], SIGINT);
+		i++;
+	}
 }
 
 void	*ft_repletion_supervisor(void *data)
@@ -65,23 +65,22 @@ void	*ft_repletion_supervisor(void *data)
 	i = 0;
 	while (i < table->rules->nbr_philo + 1)
 	{
-		sem_wait(table->global->m_repletion);
+		sem_wait(table->global->sem_repletion);
 		i++;
 	}
+	pthread_mutex_lock(&table->global->m_repletion);
+	table->global->repletion = true;
+	pthread_mutex_unlock(&table->global->m_repletion);
+	pthread_mutex_lock(&table->global->m_is_death);
 	if (!table->global->is_death)
 	{
 		usleep (table->rules->time_eat * 1000);
 		ft_display_msg(table, ft_get_time(),
 			TYPE_ENOUGH);
-		sem_wait(table->msg->m_msg);
+		sem_wait(table->msg->sem_msg);
+		sem_post(table->global->sem_is_death);
 	}
-	sem_post(table->global->m_is_death);
-	i = 0;
-	while (i < table->rules->nbr_philo)
-	{
-		sem_post(table->global->m_is_end);
-		i++;
-	}
+	pthread_mutex_unlock(&table->global->m_is_death);
 	return (NULL);
 }
 
@@ -91,19 +90,21 @@ void	*ft_death_supervisor(void *data)
 	int		i;
 
 	table = (t_table *)data;
-	sem_wait(table->global->m_is_death);
+	sem_wait(table->global->sem_is_death);
+	ft_kill_philos(table);
+	pthread_mutex_lock(&table->global->m_is_death);
 	table->global->is_death = true;
-	i = 0;
-	while (i < table->rules->nbr_philo)
+	pthread_mutex_unlock(&table->global->m_is_death);
+	pthread_mutex_lock(&table->global->m_repletion);
+	if (!table->global->repletion)
 	{
-		sem_post(table->global->m_is_end);
-		i++;
+		i = 0;
+		while (i < table->rules->nbr_philo + 1)
+		{
+			sem_post(table->global->sem_repletion);
+			i++;
+		}
 	}
-	i = 0;
-	while (i < table->rules->nbr_philo + 1)
-	{
-		sem_post(table->global->m_repletion);
-		i++;
-	}
+	pthread_mutex_unlock(&table->global->m_repletion);
 	return (NULL);
 }

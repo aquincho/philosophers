@@ -33,7 +33,9 @@ static bool	ft_end_event(t_table *table, int type)
 		table->msg->type = TYPE_DIE;
 	if (type == TYPE_ENOUGH)
 	{
+		pthread_mutex_lock(&table->global->m_all_ate_enough);
 		table->global->all_ate_enough = true;
+		pthread_mutex_unlock(&table->global->m_all_ate_enough);
 		table->msg->type = TYPE_ENOUGH;
 	}
 	return (true);

@@ -34,14 +34,10 @@ void	ft_display_msg(t_table *table, unsigned long long time, int type)
 	if (!table || !table->philo)
 		return ;
 	time -= table->global->start_time;
-	sem_wait(table->msg->m_msg);
-	if (!table->philo->is_end || type == TYPE_ENOUGH)
-	{
-		printf("%lld\t", time);
-		if (type >= 0 && type <= 4)
-			printf("%d ", table->philo->id + 1);
-		printf("%s\n", ft_msg_type(type));
-	}
-	if (type != TYPE_DIE)
-		sem_post(table->msg->m_msg);
+	sem_wait(table->msg->sem_msg);
+	printf("%lld\t", time);
+	if (type >= 0 && type <= 4)
+		printf("%d ", table->philo->id + 1);
+	printf("%s\n", ft_msg_type(type));
+	sem_post(table->msg->sem_msg);
 }
