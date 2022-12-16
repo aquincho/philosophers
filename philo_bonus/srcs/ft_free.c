@@ -29,6 +29,7 @@ static void	ft_free_semaphore(t_table *table)
 static void	ft_free_mutex(t_table *table)
 {
 	pthread_mutex_destroy(&table->global->m_is_death);
+	pthread_mutex_destroy(&table->global->m_repletion);
 	pthread_mutex_destroy(&table->philo->m_is_dead);
 	pthread_mutex_destroy(&table->philo->m_time_last_meal);
 	pthread_mutex_destroy(&table->philo->m_eat_count);
@@ -50,5 +51,7 @@ void	ft_free_table(t_table *table)
 		free (table->rules);
 	if (table->philo)
 		free (table->philo);
+	if (table->philo_pid)
+		free (table->philo_pid);
 	free (table);
 }

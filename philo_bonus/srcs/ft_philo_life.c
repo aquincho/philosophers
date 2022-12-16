@@ -52,7 +52,6 @@ static void	ft_philo_child(t_table *table, int i)
 	else
 		pthread_detach(table->philo->thr_superv);
 	result = ft_philo_life(table);
-	//pthread_join(table->philo->thr_superv, NULL);
 	ft_free_table (table);
 	exit (0);
 }
@@ -74,25 +73,6 @@ static int	ft_philo_threads(t_table *table)
 	return (result);
 }
 
-static void	ft_philo_wait(t_table *table, int *result)
-{
-	int	i;
-	//int	res_pid;
-
-	(void)result;
-	i = -1;
-	while (++i < table->rules->nbr_philo)
-		sem_post(table->msg->sem_msg);
-	/*i = 0;
-	while (i < table->rules->nbr_philo)
-	{
-		waitpid(-1, &res_pid, 0);
-		if (res_pid == 512)
-			(*result)++;
-		i++;
-	}*/
-}
-
 int	ft_philo_create(t_table *table)
 {
 	int		result;
@@ -112,7 +92,5 @@ int	ft_philo_create(t_table *table)
 	}
 	pthread_join(table->thr_death, NULL);
 	pthread_join(table->thr_repletion, NULL);
-	usleep(1000);
-	ft_philo_wait(table, &result);
 	return (result);
 }

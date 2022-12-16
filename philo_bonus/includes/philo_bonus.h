@@ -62,20 +62,15 @@ typedef struct s_global
 	sem_t				*sem_take_forks;
 	sem_t				*sem_repletion;
 	sem_t				*sem_is_death;
-	//sem_t				*sem_is_end;
 }	t_global;
 
 typedef struct s_philo
 {
 	int					id;
 	pthread_t			thr_superv;
-	//pthread_t			thr_end_philo;
 	bool				is_dead;
-	//bool				is_end;
 	bool				ate_enough;
 	pthread_mutex_t		m_is_dead;
-	//pthread_mutex_t		m_is_end;
-	//pthread_mutex_t		m_ate_enough;
 	pthread_mutex_t		m_eat_count;
 	pthread_mutex_t		m_time_last_meal;
 	int					eat_count;
@@ -97,18 +92,23 @@ typedef struct s_table
 	int			mutex_errinit;
 }	t_table;
 
-/* Rules initialization ft_init.c */
+/* Rules and table initialization ft_init.c */
 t_table				*ft_init(int argc, char **argv);
+/* Philos initialization ft_init_philos,c */
+void				ft_init_philos(t_table *table);
 void				ft_init_data_philo(t_table *table, int i);
 /* Thread supervisor ft_supervisor.c*/
 void				*ft_death_supervisor(void *data);
 void				*ft_repletion_supervisor(void *data);
 void				*ft_philo_supervisor(void *data);
 void				*ft_end_philo_supervisor(void *data);
+void				ft_kill_philos(t_table *table);
 /* Philo thread create and manage ft_philo_life.c */
 int					ft_philo_create(t_table *table);
 /* Fork management ft_actions.c */
+bool				ft_death_check(t_table *table);
 bool				ft_take_forks(t_table *table);
+void				ft_release_forks(t_table *table);
 bool				ft_eat(t_table *table);
 bool				ft_sleep(t_table *table);
 /* Messages display */

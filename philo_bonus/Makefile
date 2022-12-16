@@ -21,13 +21,14 @@ RM_PATH		= rm -rf
 HEAD_PATH	= ./includes/
 
 SRCS_PATH		= ./srcs/
-SRCS_FUNCTIONS	= philo_bonus ft_init ft_supervisor ft_philo_life ft_actions \
-ft_msg ft_time ft_errors ft_free ft_utils
+SRCS_FUNCTIONS	= philo_bonus ft_init ft_init_philos ft_supervisor \
+ft_philo_life ft_actions ft_forks ft_msg ft_time ft_errors ft_free \
+ft_utils
 SRCS_FILES		= $(addsuffix .c, $(SRCS_FUNCTIONS))
 SRCS = $(addprefix $(SRCS_PATH), $(addsuffix .c, $(SRCS_FUNCTIONS)))
 
 HEAD_FLAGS		= -I $(HEAD_PATH)
-LIBS_FLAGS		= -lpthread -pthread
+LIBS_FLAGS		=  -lpthread -pthread
 
 OBJS_PATH	= ./objs/
 OBJS_FILES	= $(SRCS_FILES:.c=.o)

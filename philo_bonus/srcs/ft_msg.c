@@ -39,5 +39,6 @@ void	ft_display_msg(t_table *table, unsigned long long time, int type)
 	if (type >= 0 && type <= 4)
 		printf("%d ", table->philo->id + 1);
 	printf("%s\n", ft_msg_type(type));
-	sem_post(table->msg->sem_msg);
+	if (type != TYPE_DIE && type != TYPE_ENOUGH)
+		sem_post(table->msg->sem_msg);
 }

@@ -40,6 +40,8 @@ static void	ft_init_mutex(t_table *table)
 	table->mutex_errinit
 		+= pthread_mutex_init(&table->global->m_is_death, NULL);
 	table->mutex_errinit
+		+= pthread_mutex_init(&table->global->m_repletion, NULL);
+	table->mutex_errinit
 		+= pthread_mutex_init(&table->philo->m_is_dead, NULL);
 	table->mutex_errinit
 		+= pthread_mutex_init(&table->philo->m_time_last_meal, NULL);
@@ -51,7 +53,6 @@ static void	ft_init_mutex(t_table *table)
 
 static void	ft_init_semaphore(t_table *table)
 {
-	
 	sem_unlink("/pmsg");
 	sem_unlink("/ptake");
 	sem_unlink("/pfork");
@@ -72,32 +73,6 @@ static void	ft_init_semaphore(t_table *table)
 		table->semaphore_errinit = 1;
 		ft_err_free_exit("Cannot initialize semaphores!", table);
 	}
-}
-
-void	ft_init_data_philo(t_table *table, int i)
-{
-		table->philo->id = i;
-		table->philo->is_dead = false;
-		table->philo->ate_enough = false;
-		table->philo->eat_count = 0;
-		table->philo->time_last_meal = 0;
-		table->philo->time_left = table->rules->time_die;
-}
-
-static void	ft_init_philos(t_table *table)
-{
-	table->msg = (t_msg *)malloc(sizeof(*(table->msg)));
-	table->global = (t_global *)malloc(sizeof(*(table->global)));
-	if (!table->msg || !table->global)
-		ft_err_free_exit("Cannot initialize data", table);
-	table->global->repletion = false;
-	table->global->is_death = false;
-	table->philo = (t_philo *)malloc(sizeof(*(table->philo)));
-	if (!table->philo)
-		ft_err_free_exit("Cannot initialize philosopher", table);
-	table->philo_pid = malloc(sizeof(pid_t) * (table->rules->nbr_philo));
-	if (!table->philo_pid)
-		ft_err_free_exit("Cannot initialize philosopher pids", table);
 }
 
 t_table	*ft_init(int argc, char **argv)
